@@ -27,45 +27,57 @@ class Interpreter(object):
         self.pos = 0
         # Current token instance 
         self.current_token = None 
+
+        # Current character pointed by self.pos
+        self.current_char = self.text[self.pos]
+
     
     def error(self):
         raise Exception("Error parsing an input.")
-    
+
+    def move_forward(self):
+        self.pos += 1
+
+        if self.pos > len(self.text) - 1 :
+            self.current_char = None
+        else:
+            self.current_char = self.text[self.pos]
+
+    def skip_whitespace(self):    
+        """
+        advance to next character if current_char is whitespace and not None
+        """
+        while self.current_char is not None and self.current_char.isspace():
+            self.move_forward()
+
+
     def get_next_token(self):
         """ 
-        Lexical analyzer",
+        Lexical analyzer,
         This method is responsible for breaking a sentence apart into tokens. 
         Then process one token at a time
         """
-        text = self.text
+        while self.current_char is not None:
+            
+            # handle whitespace
+            if self.current_char.isspace():
+                self.skip_whitespace()
+                continue
 
-        """
-        return EOF if self.pos is past the end of text
-        """
-        if self.pos > len(text) - 1:
-            return Token(EOF, None)
-        
-        """
-        get a character at the position self.pos. Then decide what token 
-        to created based on this single character.
-        """
-        current_char = text[self.pos]
+            # handle integer
+            if self.current_char.isdigit():
+                token = Token(INTEGER, int(self.current_char))
+                self.move_forward()
+                return token
+            
+            # handle '+'
+            if self.current_char == '+':
+                self.move_forward()
+                return Token(PLUS, '+')
+            
+            self.error()
 
-        """
-        check the character, if it is digit then create an INTEGER token, increment 
-        self.pos to next character. Then return the INTEGER token 
-        """
-        if current_char.isdigit():
-            token = Token(INTEGER, int(current_char))
-            self.pos += 1
-            return token
-        
-        if current_char == '+':
-            token = Token(PLUS, current_char)
-            self.pos += 1
-            return token
-
-        self.error()
+        return Token(EOF, None)
     
     def eat(self, token_type):
         """
@@ -76,6 +88,7 @@ class Interpreter(object):
             self.current_token = self.get_next_token()
         else:
             self.error()
+
 
     def expr(self):
         """
@@ -98,7 +111,10 @@ class Interpreter(object):
         expected '+' token
         """
         opr = self.current_token
-        self.eat(PLUS)
+        if opr.type == PLUS:
+            self.eat(PLUS)
+        else:
+            self.error()
 
         """
         expected single digit integer 
@@ -111,7 +127,11 @@ class Interpreter(object):
         at this point INTEGER PLUS INTEGER sequence of tokens found,
         this method can just return the result of adding two integers, 
         """
-        result = left.value + right.value 
+        if opr.type == PLUS:
+            result = left.value + right.value 
+        else:
+            self.error
+
         return result 
 
 
