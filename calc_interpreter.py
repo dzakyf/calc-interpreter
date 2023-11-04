@@ -50,6 +50,17 @@ class Interpreter(object):
         while self.current_char is not None and self.current_char.isspace():
             self.move_forward()
 
+    def parse_int(self):
+        result = ''
+        
+        """
+        append to result if self.current_char is numeric digit
+        """
+        while self.current_char is not None and self.current_char.isdigit():
+            result += self.current_char
+            self.move_forward()
+
+        return int(result)
 
     def get_next_token(self):
         """ 
@@ -66,7 +77,7 @@ class Interpreter(object):
 
             # handle integer
             if self.current_char.isdigit():
-                token = Token(INTEGER, int(self.current_char))
+                token = Token(INTEGER, self.parse_int())
                 self.move_forward()
                 return token
             
