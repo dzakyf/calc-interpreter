@@ -112,6 +112,10 @@ class Interpreter(object):
         else:
             self.error()
 
+    def term(self):
+        token = self.current_token
+        self.eat(INTEGER)
+        return token.value
 
     def expr(self):
         """
@@ -123,47 +127,28 @@ class Interpreter(object):
         """
         self.current_token = self.get_next_token()
 
-        """
-        expected single digit integer 
-        """
-        left = self.current_token
-        self.eat(INTEGER)
-
-
-        """
-        expected '+' token
-        """
-        opr = self.current_token
-        if opr.type == PLUS:
-            self.eat(PLUS)
-        elif opr.type == MINUS:
-            self.eat(MINUS)
-        elif opr.type == MULTIPLY:
-            self.eat(MULTIPLY)
-        else:
-            self.eat(DIVISION)
-        
-        """
-        expected single digit integer 
-        """
-        right = self.current_token
-        self.eat(INTEGER)
-
+        result = self.term()
 
         """
         at this point INTEGER PLUS INTEGER sequence of tokens found,
-        this method can just return the result of adding two integers, 
+        this method can just return the result of multiple operation on multiple number, 
         """
-        if opr.type == PLUS:
-            result = left.value + right.value 
-        elif opr.type == MINUS:
-            result = left.value - right.value 
-        elif opr.type == MULTIPLY:
-            result = left.value * right.value 
-        elif opr.type == DIVISION:
-            result = left.value / right.value 
-        else:
-            self.error
+        while self.current_token.type in (PLUS, MINUS, MULTIPLY, DIVISION):
+            token = self.current_token
+            if token.type == PLUS:
+                self.eat(PLUS)
+                result = result + self.term()
+            elif token.type == MINUS:
+                self.eat(MINUS)
+                result = result - self.term()
+            elif token.type == MULTIPLY:
+                self.eat(MULTIPLY)
+                result = result * self.term() 
+            elif token.type == DIVISION:
+                self.eat(DIVISION)
+                result = result / self.term() 
+            else:
+                self.error
 
         return result 
 
