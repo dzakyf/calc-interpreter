@@ -18,16 +18,17 @@ class Token(object):
     def __repr__(self):
         return self.__str__()
 
-
-class Interpreter(object):
+class Lexer(object):
+    """ 
+    Lexical analyzer,
+    This method is responsible for breaking a sentence apart into tokens. 
+    Then process one token at a time
+    """
     def __init__(self, text):
         # String from input, e.g. "1+4"
         self.text = text
         # Index into self.text
         self.pos = 0
-        # Current token instance 
-        self.current_token = None 
-
         # Current character pointed by self.pos
         self.current_char = self.text[self.pos]
 
@@ -63,11 +64,7 @@ class Interpreter(object):
         return int(result)
 
     def get_next_token(self):
-        """ 
-        Lexical analyzer,
-        This method is responsible for breaking a sentence apart into tokens. 
-        Then process one token at a time
-        """
+      
         while self.current_char is not None:
             
             # handle whitespace
@@ -101,18 +98,28 @@ class Interpreter(object):
             self.error()
 
         return Token(EOF, None)
+
+
+class Interpreter(object):
+    def __init__(self, lexer):
+        self.lexer = lexer
+        # Current token instance 
+        self.current_token = None 
     
+    def error(self):
+        return Exception("Invalid syntax")
+
     def eat(self, token_type):
         """
         compare the current token with the passed token type, if they match assign next token
         to current self.current_token, otherwise raise an exception
         """
         if self.current_token.type == token_type:
-            self.current_token = self.get_next_token()
+            self.current_token = self.lexer.get_next_token()
         else:
             self.error()
 
-    def term(self):
+    def factor(self):
         token = self.current_token
         self.eat(INTEGER)
         return token.value
@@ -125,9 +132,9 @@ class Interpreter(object):
         """
         set current token to the first token taken from input
         """
-        self.current_token = self.get_next_token()
+        self.current_token = self.lexer.get_next_token()
 
-        result = self.term()
+        result = self.factor()
 
         """
         at this point INTEGER PLUS INTEGER sequence of tokens found,
@@ -137,16 +144,16 @@ class Interpreter(object):
             token = self.current_token
             if token.type == PLUS:
                 self.eat(PLUS)
-                result = result + self.term()
+                result = result + self.factor()
             elif token.type == MINUS:
                 self.eat(MINUS)
-                result = result - self.term()
+                result = result - self.factor()
             elif token.type == MULTIPLY:
                 self.eat(MULTIPLY)
-                result = result * self.term() 
+                result = result * self.factor() 
             elif token.type == DIVISION:
                 self.eat(DIVISION)
-                result = result / self.term() 
+                result = result / self.factor() 
             else:
                 self.error
 
@@ -164,8 +171,9 @@ def main():
 
         if not text: 
             continue
-
-        interpreter = Interpreter(text)
+        
+        lexer = Lexer(text)
+        interpreter = Interpreter(lexer)
         result = interpreter.expr()
         print(result)
 
