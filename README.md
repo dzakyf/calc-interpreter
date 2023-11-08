@@ -10,5 +10,5 @@ This is an example of simple arithmetic interpreter.
     - [x] refactor lexical analyzer into Lexer and Interpreter (so it match grammars)
             expr = factor((ADD|SUBTR|MUL|DIV) factor)*
             factor = INTEGER
-    - [ ] handling associativity and precedence of operators ('+ and -', '* and /')
+    - [x] handling associativity and precedence of operators ('+ and -', '* and /')
     - [ ] handling parentheses

@@ -104,7 +104,7 @@ class Interpreter(object):
     def __init__(self, lexer):
         self.lexer = lexer
         # Current token instance 
-        self.current_token = None 
+        self.current_token = self.lexer.get_next_token() 
     
     def error(self):
         return Exception("Invalid syntax")
@@ -120,9 +120,31 @@ class Interpreter(object):
             self.error()
 
     def factor(self):
+        """
+        factor : INTEGER
+        """
         token = self.current_token
         self.eat(INTEGER)
         return token.value
+
+    def term(self):
+        """
+        term: factor((MUL|DIV) factor)*
+        """
+        result = self.factor()
+
+        while self.current_token.type in (MULTIPLY, DIVISION):
+            token = self.current_token
+
+            if token.type == MULTIPLY:
+                self.eat(MULTIPLY)
+                result = result * self.factor()
+
+            if token.type == DIVISION:
+                self.eat(DIVISION)
+                result = result / self.factor()
+
+        return result 
 
     def expr(self):
         """
@@ -130,11 +152,13 @@ class Interpreter(object):
         """        
 
         """
-        set current token to the first token taken from input
+        according to grammar rule : 
+        expr : term((ADD|SUB) term)*
+        term : factor((MUL|DIV) factor)*
+        factor : INTEGER
         """
-        self.current_token = self.lexer.get_next_token()
 
-        result = self.factor()
+        result = self.term()
 
         """
         at this point INTEGER PLUS INTEGER sequence of tokens found,
@@ -144,16 +168,10 @@ class Interpreter(object):
             token = self.current_token
             if token.type == PLUS:
                 self.eat(PLUS)
-                result = result + self.factor()
+                result = result + self.term()
             elif token.type == MINUS:
                 self.eat(MINUS)
-                result = result - self.factor()
-            elif token.type == MULTIPLY:
-                self.eat(MULTIPLY)
-                result = result * self.factor() 
-            elif token.type == DIVISION:
-                self.eat(DIVISION)
-                result = result / self.factor() 
+                result = result - self.term()
             else:
                 self.error
 
