@@ -3,7 +3,7 @@
 # EOF => token used to indicate that there is no more 
 # input left for lexical analysis
 
-INTEGER, PLUS, MINUS, MULTIPLY, DIVISION, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'DIVISION', 'EOF'
+INTEGER, PLUS, MINUS, MULTIPLY, DIVISION, L_PAREN, R_PAREN, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'DIVISION', '(', ')', 'EOF'
 
 class Token(object):
     def __init__(self, type, value):
@@ -75,7 +75,6 @@ class Lexer(object):
             # handle integer
             if self.current_char.isdigit():
                 token = Token(INTEGER, self.parse_int())
-                self.move_forward()
                 return token
             
             # handle basic arithmetic operations ('+' , '-' , '*', '/')
@@ -94,6 +93,14 @@ class Lexer(object):
             if self.current_char == '/':
                 self.move_forward()
                 return Token(DIVISION, '/')
+            
+            if self.current_char == '(':
+                self.move_forward()
+                return Token(L_PAREN, '(')
+        
+            if self.current_char == ')':
+                self.move_forward()
+                return Token(R_PAREN, ')')
             
             self.error()
 
@@ -121,11 +128,19 @@ class Interpreter(object):
 
     def factor(self):
         """
-        factor : INTEGER
+        factor : INTEGER | L_PAREN exp R_PAREN
         """
         token = self.current_token
-        self.eat(INTEGER)
-        return token.value
+
+        if token.type == INTEGER:
+            self.eat(INTEGER)
+            return token.value 
+        elif token.type == L_PAREN:
+            self.eat(L_PAREN)
+            result = self.expr()
+            self.eat(R_PAREN)
+
+            return result
 
     def term(self):
         """
@@ -140,7 +155,7 @@ class Interpreter(object):
                 self.eat(MULTIPLY)
                 result = result * self.factor()
 
-            if token.type == DIVISION:
+            elif token.type == DIVISION:
                 self.eat(DIVISION)
                 result = result / self.factor()
 
@@ -155,7 +170,7 @@ class Interpreter(object):
         according to grammar rule : 
         expr : term((ADD|SUB) term)*
         term : factor((MUL|DIV) factor)*
-        factor : INTEGER
+        factor : INTEGER | L_PAREN expr R_PAREN 
         """
 
         result = self.term()
@@ -164,7 +179,7 @@ class Interpreter(object):
         at this point INTEGER PLUS INTEGER sequence of tokens found,
         this method can just return the result of multiple operation on multiple number, 
         """
-        while self.current_token.type in (PLUS, MINUS, MULTIPLY, DIVISION):
+        while self.current_token.type in (PLUS, MINUS):
             token = self.current_token
             if token.type == PLUS:
                 self.eat(PLUS)

@@ -2,7 +2,7 @@
 
 This is an example of simple arithmetic interpreter.
 
-## Todo
+## Currently supports: 
     - [x] handling whitespace from input
     - [x] support multidigit
     - [x] support basic operations ('+', '-', '/', '*') 
@@ -11,4 +11,4 @@ This is an example of simple arithmetic interpreter.
             expr = factor((ADD|SUBTR|MUL|DIV) factor)*
             factor = INTEGER
     - [x] handling associativity and precedence of operators ('+ and -', '* and /')
-    - [ ] handling parentheses
+    - [x] handling parentheses
