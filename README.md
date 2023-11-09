@@ -2,7 +2,7 @@
 
 This is an example of simple arithmetic interpreter.
 
-## Currently supports: 
+## Finished task: 
     - [x] handling whitespace from input
     - [x] support multidigit
     - [x] support basic operations ('+', '-', '/', '*') 
@@ -11,4 +11,8 @@ This is an example of simple arithmetic interpreter.
             expr = factor((ADD|SUBTR|MUL|DIV) factor)*
             factor = INTEGER
     - [x] handling associativity and precedence of operators ('+ and -', '* and /')
+    - [x] refactor grammars so that it match these rules:
+            expr = term((ADD|SUB) term)*
+            term = factor((MUL|DIV) factor)*
+            factor = INTEGER | L_PAREN expr R_PAREN
     - [x] handling parentheses
